@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultório - Sistema Profissional</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  body { background-color: #f8f9fa; }
+  .card { margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  .table thead { background-color: #343a40; color: white; }
+  .status-concluida { color: green; font-weight: bold; }
+  .status-cancelada { color: red; font-weight: bold; }
+  .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+  .btn { border-radius: 8px; }
+  .modal-header { background-color: #343a40; color: white; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <img src="./logotipo/logo barra.png" alt="Logo" height="40" class="me-2"/>
+    <a class="navbar-brand" href="#">Consultório Profissional</a>
+  </div>
+</nav>
+
+<div class="container py-3">
+
+  <!-- Menu -->
+  <div class="row mb-4 text-center">
+    <div class="col-md-3 mb-2">
+      <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalPaciente">
+        <i class="bi bi-person-plus-fill"></i> Cadastrar Paciente
+      </button>
+    </div>
+    <div class="col-md-3 mb-2">
+      <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#modalProfissional">
+        <i class="bi bi-person-badge-fill"></i> Cadastrar Profissional
+      </button>
+    </div>
+    <div class="col-md-3 mb-2">
+      <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#modalConsulta">
+        <i class="bi bi-calendar-plus-fill"></i> Agendar Consulta
+      </button>
+    </div>
+    <div class="col-md-3 mb-2">
+      <button class="btn btn-info w-100" id="btnExportPDF">
+        <i class="bi bi-file-earmark-pdf-fill"></i> Exportar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-2">
+      <input type="date" id="filterDate" class="form-control">
+    </div>
+    <div class="col-md-6 mb-2">
+      <select id="filterProfissional" class="form-select">
+        <option value="">Filtrar por profissional</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Listas -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">Pacientes</div>
+        <ul class="list-group list-group-flush" id="listaPacientes"></ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-success text-white">Profissionais</div>
+        <ul class="list-group list-group-flush" id="listaProfissionais"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consultas -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-warning text-dark">Consultas</div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Profissional</th>
+                <th>Procedimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listaConsultas"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Paciente -->
+<div class="modal fade" id="modalPaciente" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cadastrar Paciente</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formPaciente">
+          <h6>Dados Pessoais</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Nome</label>
+              <input type="text" class="form-control" id="nomePaciente" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label>Idade</label>
+              <input type="number" class="form-control" id="idadePaciente" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label>Documento</label>
+              <input type="text" class="form-control" id="docPaciente" required>
+            </div>
+          </div>
+
+          <h6>Endereço</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Rua</label>
+              <input type="text" class="form-control" id="ruaPaciente" required>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label>Número</label>
+              <input type="number" class="form-control" id="numeroPaciente" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label>Bairro</label>
+              <input type="text" class="form-control" id="bairroPaciente" required>
+            </div>
+          </div>
+
+          <h6>Contato de Emergência</h6>
+          <div class="mb-3">
+            <label>Telefone</label>
+            <input type="text" class="form-control" id="emergenciaPaciente" required>
+          </div>
+
+          <h6>Saúde</h6>
+          <div class="mb-3">
+            <label>Alergia a medicação</label>
+            <textarea class="form-control" id="alergiaPaciente"></textarea>
+          </div>
+          <div class="mb-3">
+            <label>Histórico</label>
+            <textarea class="form-control" id="historicoPaciente"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Cadastrar Paciente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Profissional -->
+<div class="modal fade" id="modalProfissional" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cadastrar Profissional</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formProfissional">
+          <div class="mb-3">
+            <label>Nome completo</label>
+            <input type="text" class="form-control" id="nomeProfissional" required>
+          </div>
+          <div class="mb-3">
+            <label>Especialidade</label>
+            <input type="text" class="form-control" id="especialidadeProfissional" required>
+          </div>
+          <div class="mb-3">
+            <label>Documento</label>
+            <input type="text" class="form-control" id="docProfissional" required>
+          </div>
+          <div class="mb-3">
+            <label>CRM</label>
+            <input type="text" class="form-control" id="crmProfissional" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Cadastrar Profissional</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Consulta -->
+<div class="modal fade" id="modalConsulta" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agendar Consulta</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formConsulta">
+          <div class="mb-3">
+            <label>Paciente</label>
+            <select class="form-select" id="selectPaciente" required></select>
+          </div>
+          <div class="mb-3">
+            <label>Profissional</label>
+            <select class="form-select" id="selectProfissional" required></select>
+          </div>
+          <div class="mb-3">
+            <label>Procedimento</label>
+            <input type="text" class="form-control" id="procedimentoConsulta" required>
+          </div>
+          <div class="mb-3">
+            <label>Data</label>
+            <input type="date" class="form-control" id="dataConsulta" required>
+          </div>
+          <div class="mb-3">
+            <label>Hora</label>
+            <input type="time" class="form-control" id="horaConsulta" required>
+          </div>
+          <div class="mb-3">
+            <label>Acompanhante (se necessário)</label>
+            <textarea class="form-control" id="acompanhanteConsulta"></textarea>
+          </div>
+          <button type="submit" class="btn btn-warning w-100">Agendar Consulta</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const pacientes = [];
+const profissionais = [];
+const consultas = [];
+
+const listaPacientes = document.getElementById('listaPacientes');
+const listaProfissionais = document.getElementById('listaProfissionais');
+const listaConsultas = document.getElementById('listaConsultas');
+const selectPaciente = document.getElementById('selectPaciente');
+const selectProfissional = document.getElementById('selectProfissional');
+const filterDate = document.getElementById('filterDate');
+const filterProfissional = document.getElementById('filterProfissional');
+
+function atualizarListas() {
+  listaPacientes.innerHTML = '';
+  listaProfissionais.innerHTML = '';
+  listaConsultas.innerHTML = '';
+  selectPaciente.innerHTML = '';
+  selectProfissional.innerHTML = '<option value="">Filtrar por profissional</option>';
+
+  pacientes.forEach((p,i) => {
+    listaPacientes.innerHTML += `<li class="list-group-item">${p.nome} - ${p.idade} anos</li>`;
+    selectPaciente.innerHTML += `<option value="${i}">${p.nome}</option>`;
+  });
+
+  profissionais.forEach((p,i) => {
+    listaProfissionais.innerHTML += `<li class="list-group-item">${p.nome} - ${p.especialidade}</li>`;
+    selectProfissional.innerHTML += `<option value="${i}">${p.nome}</option>`;
+  });
+
+  let consultasFiltradas = consultas;
+  if(filterDate.value) consultasFiltradas = consultasFiltradas.filter(c=>c.data===filterDate.value);
+  if(filterProfissional.value) consultasFiltradas = consultasFiltradas.filter(c=>c.profissional===profissionais[filterProfissional.value].nome);
+
+  consultasFiltradas.forEach((c,i)=>{
+    listaConsultas.innerHTML += `
+      <tr>
+        <td>${c.data}</td>
+        <td>${c.hora}</td>
+        <td>${c.paciente}</td>
+        <td>${c.profissional}</td>
+        <td>${c.procedimento}</td>
+        <td class="${c.status==='Concluída'?'status-concluida':c.status==='Cancelada'?'status-cancelada':''}">${c.status||''}</td>
+        <td>
+          <button class="btn btn-sm btn-success" onclick="atualizarStatus(${i},'Concluída')"><i class="bi bi-check-lg"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="atualizarStatus(${i},'Cancelada')"><i class="bi bi-x-lg"></i></button>
+        </td>
+      </tr>`;
+  });
+}
+
+function atualizarStatus(index,status){
+  consultas[index].status=status;
+  atualizarListas();
+}
+
+document.getElementById('formPaciente').addEventListener('submit', e=>{
+  e.preventDefault();
+  pacientes.push({
+    nome: document.getElementById('nomePaciente').value,
+    idade: document.getElementById('idadePaciente').value,
+    doc: document.getElementById('docPaciente').value,
+    rua: document.getElementById('ruaPaciente').value,
+    numero: document.getElementById('numeroPaciente').value,
+    bairro: document.getElementById('bairroPaciente').value,
+    emergencia: document.getElementById('emergenciaPaciente').value,
+    alergia: document.getElementById('alergiaPaciente').value,
+    historico: document.getElementById('historicoPaciente').value
+  });
+  atualizarListas();
+  e.target.reset();
+  bootstrap.Modal.getInstance(document.getElementById('modalPaciente')).hide();
+});
+
+document.getElementById('formProfissional').addEventListener('submit', e=>{
+  e.preventDefault();
+  profissionais.push({
+    nome: document.getElementById('nomeProfissional').value,
+    especialidade: document.getElementById('especialidadeProfissional').value,
+    doc: document.getElementById('docProfissional').value,
+    crm: document.getElementById('crmProfissional').value
+  });
+  atualizarListas();
+  e.target.reset();
+  bootstrap.Modal.getInstance(document.getElementById('modalProfissional')).hide();
+});
+
+document.getElementById('formConsulta').addEventListener('submit', e=>{
+  e.preventDefault();
+  consultas.push({
+    paciente: pacientes[document.getElementById('selectPaciente').value].nome,
+    profissional: profissionais[document.getElementById('selectProfissional').value].nome,
+    procedimento: document.getElementById('procedimentoConsulta').value,
+    data: document.getElementById('dataConsulta').value,
+    hora: document.getElementById('horaConsulta').value,
+    acompanhante: document.getElementById('acompanhanteConsulta').value,
+    status: ''
+  });
+  atualizarListas();
+  e.target.reset();
+  bootstrap.Modal.getInstance(document.getElementById('modalConsulta')).hide();
+});
+
+filterDate.addEventListener('change', atualizarListas);
+filterProfissional.addEventListener('change', atualizarListas);
+
+document.getElementById('btnExportPDF').addEventListener('click',()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text("Consultas do Consultório",20,20);
+  consultas.forEach((c,i)=>{
+    doc.setFontSize(12);
+    doc.text(`${i+1}. ${c.data} ${c.hora} - ${c.paciente} com ${c.profissional} (${c.procedimento}) ${c.status? '('+c.status+')':''}`,20,30+i*10);
+  });
+  doc.save("consultas.pdf");
+});
+
+atualizarListas();
+</script>
+</body>
+</html>
